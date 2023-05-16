@@ -5,6 +5,7 @@ namespace APP\plugins\generic\jatsTemplate\classes;
 use APP\core\Application;
 use APP\core\Services;
 use APP\facades\Repo;
+use Exception;
 use PKP\config\Config;
 use PKP\core\PKPString;
 use PKP\db\DAORegistry;
@@ -12,7 +13,7 @@ use PKP\plugins\PluginRegistry;
 use PKP\search\SearchFileParser;
 use PKP\submissionFile\SubmissionFile;
 
-class JatsDom extends \DOMDocument
+class Article extends \DOMDocument
 {
     protected array $rootAttributes = [];
 
@@ -35,7 +36,7 @@ class JatsDom extends \DOMDocument
      * @return \DOMElement
      * @throws \DOMException
      */
-    private function createDomElement(string $elementName, string $elementValue = null, array $attributes = []):\DOMElement
+    public function createDomElement(string $elementName, string $elementValue = null, array $attributes = []):\DOMElement
     {
         $element = $this->createElement($elementName, $elementValue);
         foreach ($attributes as $key => $attribute) {
@@ -49,9 +50,12 @@ class JatsDom extends \DOMDocument
      * @param $parent \DOMNode
      * @param $child \DOMNode
      */
-    private function appendChildToParent($parent, $child)
+    public function appendChildToParent($parent, $child)
     {
-        $parent->appendChild($child);
+        if ($parent and $child) {
+            $parent->appendChild($child);
+        }
+
     }
 
     /**
@@ -78,79 +82,28 @@ class JatsDom extends \DOMDocument
         $articleElement = $this->createDomElement('article',null,$this->rootAttributes);
 
         // create element front
-        $front = $this->createDomElement('front');
+        $frontElement = $this->createDomElement('front');
 
         // create element journal-meta
-        $journalMeta = $this->createJournalMetaSubElements($journal);
+        $articleMeta= new ArticleMeta();
+        $journalMeta = $articleMeta->createJournalMetaSubElements($journal, $this);
 
         //append element journal-meta to element front
-        $this->appendChildToParent($front,$journalMeta);
+        $this->appendChildToParent($frontElement,$journalMeta);
 
         // create element article-meta
         $articleMeta = $this->createArticleMetaSubElements($article,$journal,$section,$request);
         //append element article-meta to element front
-        $this->appendChildToParent($front,$articleMeta);
+        $this->appendChildToParent($frontElement,$articleMeta);
         // create element body
         $body = $this->createBodySubElements($article);
         // create element back
         $back = $this->createBackSubElements($publication);
         //append element front,body,back to element article
-        $this->appendChildToParent($articleElement,$front);
+        $this->appendChildToParent($articleElement,$frontElement);
         $this->appendChildToParent($articleElement,$body);
         $this->appendChildToParent($articleElement,$back);
         return $this->loadXml($this->saveXML($articleElement));
-    }
-
-    /**
-     * create xml journal-meta DOMNode
-     * @param $journal Journal
-     * @return \DOMNode
-     */
-    private function createJournalMetaSubElements($journal):\DOMNode
-    {
-        // create element journal-meta
-        $journalMeta = $this->createDomElement('journal-meta');
-        // create element journal-id
-        $journalId = $this->createDomElement('journal-id',htmlspecialchars($journal->getPath()),['journal-id-type'=>'ojs']);
-        // create element journal-title-group
-        $journalTitleGroup = $this->createDomElement('journal-title-group',null,[]);
-        // create element journal-title
-        $journalTitle = $this->createDomElement('journal-title',htmlspecialchars($journal->getName($journal->getPrimaryLocale())),['xml:lang'=>substr($journal->getPrimaryLocale(), 0, 2)]);
-        //append element journal-title to element journal-title-group
-        $this->appendChildToParent($journalTitleGroup,$journalTitle);
-        // Include translated journal titles
-        foreach ($journal->getName(null) as $locale => $title) {
-            if ($locale == $journal->getPrimaryLocale()) continue;
-            $journalTransTitleGroup = $this->createDomElement('trans-title-group',null,['xml:lang'=>substr($locale, 0, 2)]);
-            $journalTransTitle = $this->createDomElement('trans-title',htmlspecialchars($title),[]);
-            //append element trans-title to element trans-title-group
-            $this->appendChildToParent($journalTransTitleGroup, $journalTransTitle);
-            //append element trans-title-group to element journal-title-group
-            $this->appendChildToParent($journalTitleGroup,$journalTransTitleGroup);
-        }
-        // create element publisher
-        $publisher = $this->createDomElement('publisher',null,[]);
-        // create element publisher-name
-        $publisherName = $this->createDomElement('publisher-name',htmlspecialchars($journal->getSetting('publisherInstitution')),[]);
-        //append element publisher-name to element publisher
-        $this->appendChildToParent($publisher, $publisherName);
-
-        //append element publisher,journal-id,journal-title-group to element journal-meta
-        $this->appendChildToParent($journalMeta,$journalId);
-        $this->appendChildToParent($journalMeta,$journalTitleGroup);
-        $this->appendChildToParent($journalMeta,$publisher);
-
-        // create element issn
-        if(!empty($journal->getSetting('onlineIssn'))){
-            $issnOnline = $this->createDomElement('issn',htmlspecialchars($journal->getSetting('onlineIssn')),['pub-type'=>'epub']);
-            $this->appendChildToParent($journalMeta,$issnOnline);
-        }
-        if(!empty($journal->getSetting('printIssn'))){
-            $issnPrint = $this->createDomElement('issn',htmlspecialchars($journal->getSetting('printIssn')),['pub-type'=>'ppub']);
-            $this->appendChildToParent($journalMeta,$issnPrint);
-        }
-        return $journalMeta;
-
     }
 
     /**
@@ -162,7 +115,7 @@ class JatsDom extends \DOMDocument
      * @return \DOMNode
      * @throws \Exception
      */
-    private function createArticleMetaSubElements($article,$journal,$section,$request):\DOMNode
+    function createArticleMetaSubElements($article,$journal,$section,$request):\DOMNode
     {
         // create element article-meta
         $articleMeta = $this->createDomElement('article-meta');
@@ -333,39 +286,45 @@ class JatsDom extends \DOMDocument
         }
         // Include page info, if available and parseable.
         $matches = $pageCount = null;
+        $fpageElement = $lpageElement = null;
         if (PKPString::regexp_match_get('/^(\d+)$/', $article->getPages(), $matches)) {
             $matchedPage = htmlspecialchars($matches[1]);
             // create element fpage
-            $fpage = $this->createDomElement('fpage', $matchedPage, []);
+            $fpageElement = $this->createDomElement('fpage', $matchedPage, []);
             // create element lpage
-            $lpage = $this->createDomElement('lpage', $matchedPage, []);
+            $lpageElement = $this->createDomElement('lpage', $matchedPage, []);
             $pageCount = 1;
         } elseif (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)$/', $article->getPages(), $matches)) {
             $matchedPage = htmlspecialchars($matches[1]);
             // create element fpage
-            $fpage = $this->createDomElement('fpage', $matchedPage, []);
+            $fpageElement = $this->createDomElement('fpage', $matchedPage, []);
             // create element lpage
-            $lpage = $this->createDomElement('lpage', $matchedPage, []);
+            $lpageElement = $this->createDomElement('lpage', $matchedPage, []);
             $pageCount = 1;
         } elseif (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)[ ]?-[ ]?([Pp][Pp]?[.]?[ ]?)?(\d+)$/', $article->getPages(), $matches)) {
             $matchedPageFrom = htmlspecialchars($matches[1]);
             $matchedPageTo = htmlspecialchars($matches[3]);
             // create element fpage
-            $fpage = $this->createDomElement('fpage', $matchedPageFrom, []);
+            $fpageElement = $this->createDomElement('fpage', $matchedPageFrom, []);
             // create element lpage
-            $lpage = $this->createDomElement('lpage', $matchedPageTo, []);
+            $lpageElement = $this->createDomElement('lpage', $matchedPageTo, []);
             $pageCount = $matchedPageTo - $matchedPageFrom + 1;
         } elseif (PKPString::regexp_match_get('/^(\d+)[ ]?-[ ]?(\d+)$/', $article->getPages(), $matches)) {
             $matchedPageFrom = htmlspecialchars($matches[1]);
             $matchedPageTo = htmlspecialchars($matches[2]);
-            $fpage = $this->createDomElement('fpage', $matchedPageFrom, []);
+            $fpageElement = $this->createDomElement('fpage', $matchedPageFrom, []);
             // create element lpage
-            $lpage = $this->createDomElement('lpage', $matchedPageTo, []);
+            $lpageElement = $this->createDomElement('lpage', $matchedPageTo, []);
             $pageCount = $matchedPageTo - $matchedPageFrom + 1;
         }
         // append element aff to article-meta
-        $this->appendChildToParent($articleMeta,$fpage);
-        $this->appendChildToParent($articleMeta,$lpage);
+        if($fpageElement)
+        {
+            $this->appendChildToParent($articleMeta,$fpageElement);
+        }
+        if ($lpageElement) {
+            $this->appendChildToParent($articleMeta, $lpageElement);
+        }
 
         $copyrightYear = $article->getCopyrightYear();
         $copyrightHolder = $article->getLocalizedCopyrightHolder();
@@ -486,7 +445,7 @@ class JatsDom extends \DOMDocument
      * @param $article Article
      * @return \DOMNode
      */
-    private function createBodySubElements($article):\DOMNode
+    public function createBodySubElements($article):\DOMNode
     {
         // create element body
         $bodyElement = $this->createDomElement('body', null , []);
@@ -545,7 +504,7 @@ class JatsDom extends \DOMDocument
      * @return \DOMNode
      * @throws \DOMException
      */
-    private function createBackSubElements($publication):\DOMNode
+    public function createBackSubElements($publication):\DOMNode
     {
         // create element back
         $backElement = $this->createDomElement('back', null , []);

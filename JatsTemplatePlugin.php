@@ -15,7 +15,7 @@ namespace APP\plugins\generic\jatsTemplate;
 use APP\facades\Repo;
 use APP\core\Services;
 use APP\core\Application;
-use APP\plugins\generic\jatsTemplate\classes\JatsDom;
+use APP\plugins\generic\jatsTemplate\classes\Article;
 use APP\template\TemplateManager;
 use PKP\core\PKPString;
 use PKP\db\DAORegistry;
@@ -68,7 +68,7 @@ class JatsTemplatePlugin extends GenericPlugin {
 		$doc =& $args[3];
 
 		if (!$doc && empty($candidateFiles)) {
-            $doc = new JatsDom($record);
+            $doc = new Article($record);
 		}
 
 		return false;
