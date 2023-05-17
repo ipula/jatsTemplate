@@ -11,7 +11,7 @@ class ArticleMeta extends \DOMDocument
      * @param Article $instance
      * @return \DOMNode
      */
-    public function createJournalMetaSubElements($journal, Article $instance): \DOMNode
+    public function create($journal, Article $instance): \DOMNode
     {
         // create element journal-meta
         $journalMeta = $instance->createDomElement('journal-meta');

@@ -55,7 +55,6 @@ class Article extends \DOMDocument
         if ($parent and $child) {
             $parent->appendChild($child);
         }
-
     }
 
     /**
@@ -86,7 +85,7 @@ class Article extends \DOMDocument
 
         // create element journal-meta
         $articleMeta= new ArticleMeta();
-        $journalMeta = $articleMeta->createJournalMetaSubElements($journal, $this);
+        $journalMeta = $articleMeta->create($journal, $this);
 
         //append element journal-meta to element front
         $this->appendChildToParent($frontElement,$journalMeta);
