@@ -1,0 +1,11 @@
+<journal-meta>
+    <journal-id journal-id-type="ojs">journal-path</journal-id>
+    <journal-title-group>
+        <journal-title xml:lang="en">journal-title</journal-title>
+    </journal-title-group>
+    <publisher>
+        <publisher-name>journal-publisher</publisher-name>
+    </publisher>
+    <issn pub-type="epub">onlineIssn</issn>
+    <issn pub-type="ppub">printIssn</issn>
+</journal-meta>
