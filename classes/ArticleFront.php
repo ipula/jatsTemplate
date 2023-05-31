@@ -5,6 +5,7 @@ namespace APP\plugins\generic\jatsTemplate\classes;
 use APP\core\Application;
 use APP\facades\Repo;
 use APP\journal\Journal;
+use APP\section\Section;
 use PKP\core\PKPString;
 use PKP\db\DAORegistry;
 use PKP\plugins\PluginRegistry;
@@ -412,13 +413,13 @@ class ArticleFront extends \DOMDocument
 
     /**
      * @param Article $article
-     * @param $journal
-     * @param $section
+     * @param Journal $journal
+     * @param Section $section
      * @param \DOMElement $articleMetaElement
      * @return void
      * @throws \DOMException
      */
-    public function createElementArticleCategories(Article $article, $journal, $section, \DOMElement $articleMetaElement): void
+    public function createElementArticleCategories(Article $article, Journal $journal, Section $section, \DOMElement $articleMetaElement): void
     {
         $articleCategoriesElement = $article->createDomElement('article-categories', null, []);
         // create element article-subj-group
