@@ -100,17 +100,7 @@ class ArticleFront extends \DOMDocument
         //append element article-subj-group to element article-categories
         $article->appendChildToParent($articleMetaElement,$articleIdElement);
         // create element article-categories
-        $articleCategoriesElement = $article->createDomElement('article-categories',null,[]);
-        // create element article-subj-group
-        $subjGroupElement = $article->createDomElement('subj-group',null,['xml:lang'=>$journal->getPrimaryLocale(),'subj-group-type'=>'heading']);
-        // create element article-categories
-        $subjectElement = $article->createDomElement('subject',htmlspecialchars($section->getLocalizedTitle()),[]);
-        //append element subject to element article-subj-group
-        $article->appendChildToParent($subjGroupElement,$subjectElement);
-        //append element article-subj-group to element article-categories
-        $article->appendChildToParent($articleCategoriesElement,$subjGroupElement);
-        //append element article-categories to element article-meta
-        $article->appendChildToParent($articleMetaElement,$articleCategoriesElement);
+        $this->createElementArticleCategories($article, $journal, $section, $articleMetaElement);
 
         // create element title-group
         $titleGroupElement = $article->createDomElement('title-group',null,[]);
@@ -418,5 +408,28 @@ class ArticleFront extends \DOMDocument
         };
 
         return $articleMetaElement;
+    }
+
+    /**
+     * @param Article $article
+     * @param $journal
+     * @param $section
+     * @param \DOMElement $articleMetaElement
+     * @return void
+     * @throws \DOMException
+     */
+    public function createElementArticleCategories(Article $article, $journal, $section, \DOMElement $articleMetaElement): void
+    {
+        $articleCategoriesElement = $article->createDomElement('article-categories', null, []);
+        // create element article-subj-group
+        $subjGroupElement = $article->createDomElement('subj-group', null, ['xml:lang' => $journal->getPrimaryLocale(), 'subj-group-type' => 'heading']);
+        // create element article-categories
+        $subjectElement = $article->createDomElement('subject', htmlspecialchars($section->getLocalizedTitle()), []);
+        //append element subject to element article-subj-group
+        $article->appendChildToParent($subjGroupElement, $subjectElement);
+        //append element article-subj-group to element article-categories
+        $article->appendChildToParent($articleCategoriesElement, $subjGroupElement);
+        //append element article-categories to element article-meta
+        $article->appendChildToParent($articleMetaElement, $articleCategoriesElement);
     }
 }
