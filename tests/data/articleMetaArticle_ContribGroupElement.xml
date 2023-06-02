@@ -1,0 +1,10 @@
+<contrib-group content-type="author">
+    <contrib>
+        <email>someone@example.com</email>
+        <xref ref-type="aff" rid="aff-1"/>
+        <name name-style="western">
+            <surname>author-lastname</surname>
+            <given-names>author-firstname</given-names>
+        </name>
+    </contrib>
+</contrib-group>
