@@ -16,20 +16,20 @@ class ArticleBack extends \DOMDocument
     public function create($publication, Article $article):\DOMNode
     {
         // create element back
-        $backElement = $article->createDomElement('back', null , []);
+        $backElement = $article->createDom('back', null , []);
 
         $citationDao = DAORegistry::getDAO('CitationDAO');
         $citations = $citationDao->getByPublicationId($publication->getId())->toArray();
 //        dd($citations);
         if (count($citations)) {
             // create element ref-list
-            $refListElement = $article->createDomElement('ref-list', null , []);
+            $refListElement = $article->createDom('ref-list', null , []);
             $i=1;
             foreach ($citations as $citation) {
                 // create element ref
-                $refElement = $article->createDomElement('ref', null , ['id'=>'R'.$i]);
+                $refElement = $article->createDom('ref', null , ['id'=>'R'.$i]);
                 // create element mixed-citation
-                $mixedCitationElement = $article->createDomElement('mixed-citation', htmlspecialchars($citation->getRawCitation()) , []);
+                $mixedCitationElement = $article->createDom('mixed-citation', htmlspecialchars($citation->getRawCitation()) , []);
                 // append element mixed-citation to ref
                 $article->appendChildToParent($refElement,$mixedCitationElement);
                 // append element ref to ref-list

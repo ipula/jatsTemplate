@@ -21,9 +21,9 @@ class ArticleFront extends \DOMDocument
      */
     public function create(Journal $journal,Submission $submission, Section $section,Issue $issue, $request, Article $article): \DOMNode
     {
-        $frontElement = $article->createDomElement('front');
-        $journalMeta = $this->createJournalMetaElements($journal,$article);
-        $articleMeta = $this->createArticleMetaElements($submission,$journal,$section,$issue,$request,$article);
+        $frontElement = $article->createDom('front');
+        $journalMeta = $this->createJournalMeta($journal,$article);
+        $articleMeta = $this->createArticleMeta($submission,$journal,$section,$issue,$request,$article);
         $article->appendChildToParent($frontElement,$journalMeta);
         $article->appendChildToParent($frontElement,$articleMeta);
         return $frontElement;
@@ -36,18 +36,18 @@ class ArticleFront extends \DOMDocument
      * @return \DOMNode
      * @throws \DOMException
      */
-    public function createJournalMetaElements(Journal $journal, Article $article): \DOMNode
+    public function createJournalMeta(Journal $journal, Article $article): \DOMNode
     {
         // create element journal-meta
-        $journalMetaElement = $article->createDomElement('journal-meta');
+        $journalMetaElement = $article->createDom('journal-meta');
         // create element journal-id
-        $journalIdElement = $article->createDomElement('journal-id', htmlspecialchars($journal->getPath()), ['journal-id-type' => 'ojs']);
+        $journalIdElement = $article->createDom('journal-id', htmlspecialchars($journal->getPath()), ['journal-id-type' => 'ojs']);
         // create element journal-title-group
-        $journalTitleGroupElement = $this->createElementJournalMetaJournalTitleGroup($journal, $article);
+        $journalTitleGroupElement = $this->createJournalMetaJournalTitleGroup($journal, $article);
         // create element publisher
-        $publisherElement = $article->createDomElement('publisher', null, []);
+        $publisherElement = $article->createDom('publisher', null, []);
         // create element publisher-name
-        $publisherNameElement = $article->createDomElement('publisher-name', htmlspecialchars($journal->getSetting('publisherInstitution')), []);
+        $publisherNameElement = $article->createDom('publisher-name', htmlspecialchars($journal->getSetting('publisherInstitution')), []);
         //append element publisher-name to element publisher
         $article->appendChildToParent($publisherElement, $publisherNameElement);
 
@@ -58,11 +58,11 @@ class ArticleFront extends \DOMDocument
 
         // create element issn
         if (!empty($journal->getSetting('onlineIssn'))) {
-            $issnOnlineElement = $article->createDomElement('issn', htmlspecialchars($journal->getSetting('onlineIssn')), ['pub-type' => 'epub']);
+            $issnOnlineElement = $article->createDom('issn', htmlspecialchars($journal->getSetting('onlineIssn')), ['pub-type' => 'epub']);
             $article->appendChildToParent($journalMetaElement, $issnOnlineElement);
         }
         if (!empty($journal->getSetting('printIssn'))) {
-            $issnPrintElement = $article->createDomElement('issn', htmlspecialchars($journal->getSetting('printIssn')), ['pub-type' => 'ppub']);
+            $issnPrintElement = $article->createDom('issn', htmlspecialchars($journal->getSetting('printIssn')), ['pub-type' => 'ppub']);
             $article->appendChildToParent($journalMetaElement, $issnPrintElement);
         }
         return $journalMetaElement;
@@ -76,18 +76,18 @@ class ArticleFront extends \DOMDocument
      * @return \DOMElement
      * @throws \DOMException
      */
-    public function createElementJournalMetaJournalTitleGroup(Journal $journal, Article $article): \DOMElement
+    public function createJournalMetaJournalTitleGroup(Journal $journal, Article $article): \DOMElement
     {
-        $journalTitleGroupElement = $article->createDomElement('journal-title-group', null, []);
+        $journalTitleGroupElement = $article->createDom('journal-title-group', null, []);
         // create element journal-title
-        $journalTitleElement = $article->createDomElement('journal-title', htmlspecialchars($journal->getName($journal->getPrimaryLocale())), ['xml:lang' => substr($journal->getPrimaryLocale(), 0, 2)]);
+        $journalTitleElement = $article->createDom('journal-title', htmlspecialchars($journal->getName($journal->getPrimaryLocale())), ['xml:lang' => substr($journal->getPrimaryLocale(), 0, 2)]);
         //append element journal-title to element journal-title-group
         $article->appendChildToParent($journalTitleGroupElement, $journalTitleElement);
         // Include translated journal titles
         foreach ($journal->getName(null) as $locale => $title) {
             if ($locale == $journal->getPrimaryLocale()) continue;
-            $journalTransTitleGroupElement = $article->createDomElement('trans-title-group', null, ['xml:lang' => substr($locale, 0, 2)]);
-            $journalTransTitleElement = $article->createDomElement('trans-title', htmlspecialchars($title), []);
+            $journalTransTitleGroupElement = $article->createDom('trans-title-group', null, ['xml:lang' => substr($locale, 0, 2)]);
+            $journalTransTitleElement = $article->createDom('trans-title', htmlspecialchars($title), []);
             //append element trans-title to element trans-title-group
             $article->appendChildToParent($journalTransTitleGroupElement, $journalTransTitleElement);
             //append element trans-title-group to element journal-title-group
@@ -107,27 +107,27 @@ class ArticleFront extends \DOMDocument
      * @return \DOMNode
      * @throws \DOMException
      */
-    function createArticleMetaElements(Submission $submission, Journal $journal, Section $section, Issue $issue,$request,Article $article):\DOMNode
+    function createArticleMeta(Submission $submission, Journal $journal, Section $section, Issue $issue, $request, Article $article):\DOMNode
     {
         // create element article-meta
-        $articleMetaElement = $article->createDomElement('article-meta');
+        $articleMetaElement = $article->createDom('article-meta');
         // create element article-id
-        $articleIdElement = $article->createDomElement('article-id',$submission->getId(),['pub-id-type'=>'publisher-id']);
+        $articleIdElement = $article->createDom('article-id',$submission->getId(),['pub-id-type'=>'publisher-id']);
         //append element article-subj-group to element article-categories
         $article->appendChildToParent($articleMetaElement,$articleIdElement);
         // create element article-categories
-        $articleCategoriesElement = $this->createElementArticleCategories($article, $journal, $section);
+        $articleCategoriesElement = $this->createArticleCategories($article, $journal, $section);
         //append element article-categories to element article-meta
         $article->appendChildToParent($articleMetaElement, $articleCategoriesElement);
         // create element title-group
-        $titleGroupElement = $article->createDomElement('title-group',null,[]);
+        $titleGroupElement = $article->createDom('title-group',null,[]);
         // create element article-title
-        $articleTitleElement  = $article->createDomElement('article-title',$article->mapHtmlTagsForTitle($submission->getCurrentPublication()->getLocalizedTitle(null, 'html')),['xml:lang'=>substr($submission->getLocale()=== null?'':$submission->getLocale(), 0, 2)]);
+        $articleTitleElement  = $article->createDom('article-title',$article->mapHtmlTagsForTitle($submission->getCurrentPublication()->getLocalizedTitle(null, 'html')),['xml:lang'=>substr($submission->getLocale()=== null?'':$submission->getLocale(), 0, 2)]);
         //append element article-title to element title-group
         $article->appendChildToParent($titleGroupElement,$articleTitleElement);
         // create element subtitle
         if (!empty($subtitle = $article->mapHtmlTagsForTitle($submission->getCurrentPublication()->getLocalizedSubTitle(null, 'html')))) {
-            $subtitleElement = $article->createDomElement('subtitle',$subtitle,['xml:lang'=>substr($submission->getLocale(), 0, 2)]);
+            $subtitleElement = $article->createDom('subtitle',$subtitle,['xml:lang'=>substr($submission->getLocale(), 0, 2)]);
             //append element subtitle to element title-group
             $article->appendChildToParent($titleGroupElement,$subtitleElement);
         }
@@ -143,15 +143,15 @@ class ArticleFront extends \DOMDocument
             }
 
             // create element trans-title-group
-            $transTitleGroupElement = $article->createDomElement('trans-title-group',null,['xml:lang'=>substr($locale, 0, 2)]);
+            $transTitleGroupElement = $article->createDom('trans-title-group',null,['xml:lang'=>substr($locale, 0, 2)]);
             // create element trans-title
-            $transTitleElement = $article->createDomElement('trans-title',$translatedTitle,[]);
+            $transTitleElement = $article->createDom('trans-title',$translatedTitle,[]);
             //append element trans-title to element trans-title-group
             $article->appendChildToParent($transTitleGroupElement,$transTitleElement);
 
             if (!empty($translatedSubTitle = $article->mapHtmlTagsForTitle($submission->getCurrentPublication()->getLocalizedSubTitle($locale, 'html')))) {
                 // create element trans-subtitle
-                $transSubTitleElement = $article->createDomElement('trans-subtitle',$translatedSubTitle,[]);
+                $transSubTitleElement = $article->createDom('trans-subtitle',$translatedSubTitle,[]);
                 //append element trans-subtitle to element trans-title-group
                 $article->appendChildToParent($transTitleGroupElement,$transSubTitleElement);
             }
@@ -162,7 +162,7 @@ class ArticleFront extends \DOMDocument
         $article->appendChildToParent($articleMetaElement,$titleGroupElement);
 
         // create element contrib-group
-        $contribGroup = $this->createElementArticleContribGroup($submission,$article);
+        $contribGroup = $this->createArticleContribGroup($submission,$article);
 
         // Include authors
         $affiliations = $contribGroup['affiliations'];
@@ -172,9 +172,9 @@ class ArticleFront extends \DOMDocument
 
         foreach ($affiliations as $affiliationToken => $affiliation) {
             // create element aff
-            $affElement = $article->createDomElement('aff', null, ['id' => $affiliationToken]);
+            $affElement = $article->createDom('aff', null, ['id' => $affiliationToken]);
             // create element institution
-            $institutionElement = $article->createDomElement('institution', htmlspecialchars($affiliation), ['content-type' => 'orgname']);
+            $institutionElement = $article->createDom('institution', htmlspecialchars($affiliation), ['content-type' => 'orgname']);
             // append element institution to aff
             $article->appendChildToParent($affElement, $institutionElement);
             // append element aff to article-meta
@@ -188,13 +188,13 @@ class ArticleFront extends \DOMDocument
         //include pub dates
         if ($submission->getDatePublished()){
             // create element pub-date
-            $pubDateElement = $article->createDomElement('pub-date', null, ['date-type' => 'pub','publication-format'=>'epub']);
+            $pubDateElement = $article->createDom('pub-date', null, ['date-type' => 'pub','publication-format'=>'epub']);
             // create element day
-            $dayElement = $article->createDomElement('day', strftime('%d', (int)$datePublished), []);
+            $dayElement = $article->createDom('day', strftime('%d', (int)$datePublished), []);
             // create element month
-            $monthElement = $article->createDomElement('month', strftime('%m', (int)$datePublished), []);
+            $monthElement = $article->createDom('month', strftime('%m', (int)$datePublished), []);
             // create element year
-            $yearElement = $article->createDomElement('year', strftime('%Y', (int)$datePublished), []);
+            $yearElement = $article->createDom('year', strftime('%Y', (int)$datePublished), []);
             // append element day,month,year to pub-date
             $article->appendChildToParent($pubDateElement,$dayElement);
             $article->appendChildToParent($pubDateElement,$monthElement);
@@ -208,31 +208,31 @@ class ArticleFront extends \DOMDocument
         if (PKPString::regexp_match_get('/^(\d+)$/', $submission->getPages(), $matches)) {
             $matchedPage = htmlspecialchars($matches[1]);
             // create element fpage
-            $fpageElement = $article->createDomElement('fpage', $matchedPage, []);
+            $fpageElement = $article->createDom('fpage', $matchedPage, []);
             // create element lpage
-            $lpageElement = $article->createDomElement('lpage', $matchedPage, []);
+            $lpageElement = $article->createDom('lpage', $matchedPage, []);
             $pageCount = 1;
         } elseif (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)$/', $submission->getPages(), $matches)) {
             $matchedPage = htmlspecialchars($matches[1]);
             // create element fpage
-            $fpageElement = $article->createDomElement('fpage', $matchedPage, []);
+            $fpageElement = $article->createDom('fpage', $matchedPage, []);
             // create element lpage
-            $lpageElement = $article->createDomElement('lpage', $matchedPage, []);
+            $lpageElement = $article->createDom('lpage', $matchedPage, []);
             $pageCount = 1;
         } elseif (PKPString::regexp_match_get('/^[Pp][Pp]?[.]?[ ]?(\d+)[ ]?-[ ]?([Pp][Pp]?[.]?[ ]?)?(\d+)$/', $submission->getPages(), $matches)) {
             $matchedPageFrom = htmlspecialchars($matches[1]);
             $matchedPageTo = htmlspecialchars($matches[3]);
             // create element fpage
-            $fpageElement = $article->createDomElement('fpage', $matchedPageFrom, []);
+            $fpageElement = $article->createDom('fpage', $matchedPageFrom, []);
             // create element lpage
-            $lpageElement = $article->createDomElement('lpage', $matchedPageTo, []);
+            $lpageElement = $article->createDom('lpage', $matchedPageTo, []);
             $pageCount = $matchedPageTo - $matchedPageFrom + 1;
         } elseif (PKPString::regexp_match_get('/^(\d+)[ ]?-[ ]?(\d+)$/', $submission->getPages(), $matches)) {
             $matchedPageFrom = htmlspecialchars($matches[1]);
             $matchedPageTo = htmlspecialchars($matches[2]);
-            $fpageElement = $article->createDomElement('fpage', $matchedPageFrom, []);
+            $fpageElement = $article->createDom('fpage', $matchedPageFrom, []);
             // create element lpage
-            $lpageElement = $article->createDomElement('lpage', $matchedPageTo, []);
+            $lpageElement = $article->createDom('lpage', $matchedPageTo, []);
             $pageCount = $matchedPageTo - $matchedPageFrom + 1;
         }
         // append element aff to article-meta
@@ -250,31 +250,31 @@ class ArticleFront extends \DOMDocument
         $ccBadge = Application::get()->getCCLicenseBadge($licenseUrl, $submission->getLocale())=== null?'':Application::get()->getCCLicenseBadge($licenseUrl, $submission->getLocale());
         if ($copyrightYear || $copyrightHolder || $licenseUrl || $ccBadge){
             // create element permissions
-            $permissionsElement = $article->createDomElement('permissions', null, []);
+            $permissionsElement = $article->createDom('permissions', null, []);
             if($copyrightYear||$copyrightHolder){
                 // create element copyright-statement
-                $copyrightStatementElement = $article->createDomElement('copyright-statement', htmlspecialchars(__('submission.copyrightStatement', ['copyrightYear' => $copyrightYear, 'copyrightHolder' => $copyrightHolder])), []);
+                $copyrightStatementElement = $article->createDom('copyright-statement', htmlspecialchars(__('submission.copyrightStatement', ['copyrightYear' => $copyrightYear, 'copyrightHolder' => $copyrightHolder])), []);
                 // append element copyright-statement to permissions
                 $article->appendChildToParent($permissionsElement,$copyrightStatementElement);
             }
             if($copyrightYear){
                 // create element copyright-year
-                $copyrightYearElement = $article->createDomElement('copyright-year', htmlspecialchars($copyrightYear) , []);
+                $copyrightYearElement = $article->createDom('copyright-year', htmlspecialchars($copyrightYear) , []);
                 // append element copyright-year to permissions
                 $article->appendChildToParent($permissionsElement,$copyrightYearElement);
             }
             if($copyrightHolder){
                 // create element copyright-holder
-                $copyrightHolderElement = $article->createDomElement('copyright-holder', htmlspecialchars($copyrightHolder), []);
+                $copyrightHolderElement = $article->createDom('copyright-holder', htmlspecialchars($copyrightHolder), []);
                 // append element copyright-holder to permissions
                 $article->appendChildToParent($permissionsElement,$copyrightHolderElement);
             }
             if($licenseUrl) {
                 // create element license
-                $licenseUrlElement = $article->createDomElement('license', null, ['xlink:href' => htmlspecialchars($licenseUrl)]);
+                $licenseUrlElement = $article->createDom('license', null, ['xlink:href' => htmlspecialchars($licenseUrl)]);
                 if($ccBadge){
                     // create element license-p
-                    $ccBadgeElement = $article->createDomElement('license-p', strip_tags($ccBadge) , []);
+                    $ccBadgeElement = $article->createDom('license-p', strip_tags($ccBadge) , []);
                     // append element license-p to license
                     $article->appendChildToParent($licenseUrlElement,$ccBadgeElement);
                 }
@@ -286,7 +286,7 @@ class ArticleFront extends \DOMDocument
         }
 
         // create element self-uri
-        $selfUriElement= $article->createDomElement('self-uri', strip_tags($ccBadge) , ['xlink:href'=>htmlspecialchars($request->url($journal->getPath(), 'article', 'view', $submission->getBestArticleId()) != null && $request->url($journal->getPath(), 'article', 'view', $submission->getBestArticleId()))]);
+        $selfUriElement= $article->createDom('self-uri', strip_tags($ccBadge) , ['xlink:href'=>htmlspecialchars($request->url($journal->getPath(), 'article', 'view', $submission->getBestArticleId()) != null && $request->url($journal->getPath(), 'article', 'view', $submission->getBestArticleId()))]);
         //append element self-uri to article-meta
         $article->appendChildToParent($articleMetaElement,$selfUriElement);
 
@@ -294,10 +294,10 @@ class ArticleFront extends \DOMDocument
         foreach ($submissionKeywordDao->getKeywords($submission->getCurrentPublication()->getId(), $journal->getSupportedLocales()) as $locale => $keywords) {
             if (empty($keywords)) continue;
             // create element kwd-group
-            $kwdGroupElement = $article->createDomElement('kwd-group', null , ['xml:lang'=>substr($locale, 0, 2)]);
+            $kwdGroupElement = $article->createDom('kwd-group', null , ['xml:lang'=>substr($locale, 0, 2)]);
             foreach ($keywords as $keyword) {
                 // create element kwd
-                $kwdElement = $article->createDomElement('kwd', null , ['xml:lang'=>substr($locale, 0, 2)]);
+                $kwdElement = $article->createDom('kwd', null , ['xml:lang'=>substr($locale, 0, 2)]);
                 // append element kwd to kwd-group
                 $article->appendChildToParent($kwdGroupElement,$kwdElement);
             }
@@ -307,9 +307,9 @@ class ArticleFront extends \DOMDocument
 
         if(isset($pageCount)){
             // create element counts
-            $countElement = $article->createDomElement('counts', null , []);
+            $countElement = $article->createDom('counts', null , []);
             // create element page-count
-            $pageCountElement = $article->createDomElement('page-count', null , ['count'=>(int) $pageCount]);
+            $pageCountElement = $article->createDom('page-count', null , ['count'=>(int) $pageCount]);
             // append element page-count to count
             $article->appendChildToParent($countElement,$pageCountElement);
             // append element count to article-meta
@@ -318,7 +318,7 @@ class ArticleFront extends \DOMDocument
 
         $candidateFound = false;
         // create element custom-meta-group
-        $customMetaGroupElement = $article->createDomElement('custom-meta-group', null , []);
+        $customMetaGroupElement = $article->createDom('custom-meta-group', null , []);
         $layoutFiles = Repo::submissionFile()->getCollector()
             ->filterBySubmissionIds([$submission->getId()])
             ->filterByFileStages([SubmissionFile::SUBMISSION_FILE_PRODUCTION_READY])
@@ -335,13 +335,13 @@ class ArticleFront extends \DOMDocument
                 ]
             );
             // create element custom-meta-group
-            $customMetaGroupElement = $article->createDomElement('custom-meta', null , []);
+            $customMetaGroupElement = $article->createDom('custom-meta', null , []);
             // create element meta-name
-            $metaNameElement = $article->createDomElement('meta-name', 'production-ready-file-url' , []);
+            $metaNameElement = $article->createDom('meta-name', 'production-ready-file-url' , []);
             // create element meta-value
-            $metaValueElement = $article->createDomElement('meta-value', null , []);
+            $metaValueElement = $article->createDom('meta-value', null , []);
             // create element ext-link
-            $extLinkElement = $article->createDomElement('ext-link', null , ['ext-link-type'=>'uri','xlink:href'=>htmlspecialchars($sourceFileUrl)]);
+            $extLinkElement = $article->createDom('ext-link', null , ['ext-link-type'=>'uri','xlink:href'=>htmlspecialchars($sourceFileUrl)]);
             // append element ext-link to meta-value
             $article->appendChildToParent($metaValueElement,$extLinkElement);
             // append element meta-value to meta-name
@@ -364,13 +364,13 @@ class ArticleFront extends \DOMDocument
      * @param Section $section
      * @throws \DOMException
      */
-    public function createElementArticleCategories(Article $article, Journal $journal, Section $section): \DOMElement
+    public function createArticleCategories(Article $article, Journal $journal, Section $section): \DOMElement
     {
-        $articleCategoriesElement = $article->createDomElement('article-categories', null, []);
+        $articleCategoriesElement = $article->createDom('article-categories', null, []);
         // create element article-subj-group
-        $subjGroupElement = $article->createDomElement('subj-group', null, ['xml:lang' => $journal->getPrimaryLocale(), 'subj-group-type' => 'heading']);
+        $subjGroupElement = $article->createDom('subj-group', null, ['xml:lang' => $journal->getPrimaryLocale(), 'subj-group-type' => 'heading']);
         // create element article-categories
-        $subjectElement = $article->createDomElement('subject', htmlspecialchars($section->getLocalizedTitle()), []);
+        $subjectElement = $article->createDom('subject', htmlspecialchars($section->getLocalizedTitle()), []);
         //append element subject to element article-subj-group
         $article->appendChildToParent($subjGroupElement, $subjectElement);
         //append element article-subj-group to element article-categories
@@ -385,10 +385,10 @@ class ArticleFront extends \DOMDocument
      * @return array
      * @throws \DOMException
      */
-    public function createElementArticleContribGroup(Submission $submission, Article $article): array
+    public function createArticleContribGroup(Submission $submission, Article $article): array
     {
         // create element contrib-group
-        $contribGroupElement = $article->createDomElement('contrib-group',null,['content-type'=>'author']);
+        $contribGroupElement = $article->createDom('contrib-group',null,['content-type'=>'author']);
 
         // Include authors
         $affiliations = [];
@@ -402,7 +402,7 @@ class ArticleFront extends \DOMDocument
             $surname = method_exists($author, 'getLastName') ? $author->getLastName() : $author->getLocalizedFamilyName();
 
             // create element contrib
-            $contribElement = $article->createDomElement('contrib', null, $author->getPrimaryContact() ? ['corresp' => 'yes'] : []);
+            $contribElement = $article->createDom('contrib', null, $author->getPrimaryContact() ? ['corresp' => 'yes'] : []);
             // If using the CRediT plugin, credit roles may be available.
             $creditPlugin = PluginRegistry::getPlugin('generic', 'creditplugin');
             if ($creditPlugin && $creditPlugin->getEnabled()) {
@@ -411,7 +411,7 @@ class ArticleFront extends \DOMDocument
                 foreach ($contributorRoles as $role) {
                     $roleName = $creditRoles[$role];
                     // create element role
-                    $roleElement = $article->createDomElement('role', htmlspecialchars($roleName), ['vocab-identifier' => 'https://credit.niso.org/', 'vocab-term' => htmlspecialchars($roleName), 'vocab-term-identifier' => htmlspecialchars($role)]);
+                    $roleElement = $article->createDom('role', htmlspecialchars($roleName), ['vocab-identifier' => 'https://credit.niso.org/', 'vocab-term' => htmlspecialchars($roleName), 'vocab-term-identifier' => htmlspecialchars($role)]);
                     // append element role to contrib
                     $article->appendChildToParent($contribElement, $roleElement);
                 }
@@ -419,40 +419,40 @@ class ArticleFront extends \DOMDocument
 
             if ($author->getOrcid()) {
                 // create element role
-                $contribIdElement = $article->createDomElement('contrib-id', htmlspecialchars($author->getOrcid()), ['contrib-id-type' => 'orcid']);
+                $contribIdElement = $article->createDom('contrib-id', htmlspecialchars($author->getOrcid()), ['contrib-id-type' => 'orcid']);
                 // append element contrib-id to contrib
                 $article->appendChildToParent($contribElement, $contribIdElement);
             }
             // create element name
-            $nameElement = $article->createDomElement('name', null, ['name-style' => 'western']);
+            $nameElement = $article->createDom('name', null, ['name-style' => 'western']);
             if ($surname != '') {
                 // create element surname
-                $surnameElement = $article->createDomElement('surname', htmlspecialchars($surname), []);
+                $surnameElement = $article->createDom('surname', htmlspecialchars($surname), []);
                 // append element surname to name
                 $article->appendChildToParent($nameElement, $surnameElement);
                 // append element name to contrib
                 $article->appendChildToParent($contribElement, $nameElement);
             }
             // create element given-names
-            $givenNamesElement = $article->createDomElement(
+            $givenNamesElement = $article->createDom(
                 'given-names',
                 htmlspecialchars(method_exists($author, 'getFirstName') ? $author->getFirstName() : $author->getLocalizedGivenName()) . (((method_exists($author, 'getMiddleName') && $s = $author->getMiddleName()) != '') ? " $s" : ''),
                 []);
             // append element given-names,surname to name
             $article->appendChildToParent($nameElement, $givenNamesElement);
             // create element email
-            $emailElement = $article->createDomElement('email', htmlspecialchars($author->getEmail()), []);
+            $emailElement = $article->createDom('email', htmlspecialchars($author->getEmail()), []);
             // append element email to contrib
             $article->appendChildToParent($contribElement, $emailElement);
             if ($affiliationToken) {
                 // create element xref
-                $xrefElement = $article->createDomElement('xref', null, ['ref-type' => 'aff', 'rid' => $affiliationToken]);
+                $xrefElement = $article->createDom('xref', null, ['ref-type' => 'aff', 'rid' => $affiliationToken]);
                 // append element $xref to contrib
                 $article->appendChildToParent($contribElement, $xrefElement);
             }
             if (($s = $author->getUrl()) != '') {
                 // create element uri
-                $uriElement = $article->createDomElement('uri', htmlspecialchars($s), ['ref-type' => 'aff', 'rid' => $affiliationToken]);
+                $uriElement = $article->createDom('uri', htmlspecialchars($s), ['ref-type' => 'aff', 'rid' => $affiliationToken]);
                 // append element contrib-id to contrib
                 $article->appendChildToParent($contribElement, $uriElement);
             }

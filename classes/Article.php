@@ -28,7 +28,7 @@ class Article extends \DOMDocument
      * @return \DOMElement
      * @throws \DOMException
      */
-    public function createDomElement(string $elementName, $elementValue = null, array $attributes = []):\DOMElement
+    public function createDom(string $elementName, $elementValue = null, array $attributes = []):\DOMElement
     {
         try {
             $element = $this->createElement($elementName, $elementValue === null?'':$elementValue);
@@ -72,7 +72,7 @@ class Article extends \DOMDocument
         $this->rootAttributes['xml:lang'] = substr($submission->getLocale()=== null?'':$submission->getLocale(), 0, 2);
 
         // create root element article
-        $articleElement = $this->createDomElement('article',null,$this->rootAttributes);
+        $articleElement = $this->createDom('article',null,$this->rootAttributes);
         // create element journal-meta
         $articleFront = new ArticleFront();
         $frontElement = $articleFront->create($journal,$submission,$section,$issue,$request,$this);

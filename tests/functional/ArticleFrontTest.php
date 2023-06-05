@@ -239,14 +239,14 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
      * testing create journal-meta element
      * @throws \DOMException
      */
-    public function testCreateJournalMetaElements(){
+    public function testCreateJournalMeta(){
         $OAIRecord = $this->createOAIRecordMockObject();
         $record =& $OAIRecord;
         $journal =& $record->getData('journal');
         $article = $this->createArticleMockInstance($record);
 
         $articleFrontElement = new ArticleFront();
-        $xml = $articleFrontElement->createJournalMetaElements(
+        $xml = $articleFrontElement->createJournalMeta(
             $journal,
             $article,
         );
@@ -257,7 +257,7 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
      * testing create article-meta element
      * @throws \DOMException
      */
-    public function testCreateArticleMetaElements(){
+    public function testCreateArticleMeta(){
         $OAIRecord = $this->createOAIRecordMockObject();
         $record =& $OAIRecord;
         $submission =& $record->getData('article');
@@ -267,7 +267,7 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
         $article = $this->createArticleMockInstance($record);
 
         $articleFrontElement = new ArticleFront();
-        $xml = $articleFrontElement->createArticleMetaElements(
+        $xml = $articleFrontElement->createArticleMeta(
             $submission,
             $journal,
             $section,
@@ -282,14 +282,14 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
      * testing create journal-meta journal-title-group element
      * @throws \DOMException
      */
-    public function testCreateElementJournalMetaJournalTitleGroup(){
+    public function testCreateJournalMetaJournalTitleGroup(){
         $OAIRecord = $this->createOAIRecordMockObject();
         $record =& $OAIRecord;
         $journal =& $record->getData('journal');
         $article = $this->createArticleMockInstance($record);
 
         $articleFrontElement = new ArticleFront();
-        $xml = $articleFrontElement->createElementJournalMetaJournalTitleGroup(
+        $xml = $articleFrontElement->createJournalMetaJournalTitleGroup(
             $journal,
             $article,
         );
@@ -300,7 +300,7 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
      * testing create article-meta article-categories element
      * @throws \DOMException
      */
-    public function testCreateElementArticleCategories(){
+    public function testCreateArticleCategories(){
         $OAIRecord = $this->createOAIRecordMockObject();
         $record =& $OAIRecord;
         $journal =& $record->getData('journal');
@@ -308,7 +308,7 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
         $section =& $record->getData('section');
 
         $articleFrontElement = new ArticleFront();
-        $xml = $articleFrontElement->createElementArticleCategories(
+        $xml = $articleFrontElement->createArticleCategories(
             $article,
             $journal,
             $section
@@ -320,14 +320,14 @@ class ArticleFrontTest extends \PKP\tests\PKPTestCase
      * testing create article-meta contrib-group element
      * @throws \DOMException
      */
-    public function testCreateElementArticleContribGroup(){
+    public function testCreateArticleContribGroup(){
         $OAIRecord = $this->createOAIRecordMockObject();
         $record =& $OAIRecord;
         $submission =& $record->getData('article');
         $article = $this->createArticleMockInstance($record);
 
         $articleFrontElement = new ArticleFront();
-        $xml = $articleFrontElement->createElementArticleContribGroup(
+        $xml = $articleFrontElement->createArticleContribGroup(
             $submission,
             $article
         );

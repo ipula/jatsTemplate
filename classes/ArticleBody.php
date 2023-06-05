@@ -20,7 +20,7 @@ class ArticleBody extends \DOMDocument
     public function create(Submission $submission, Article $article):\DOMNode
     {
         // create element body
-        $bodyElement = $article->createDomElement('body', null , []);
+        $bodyElement = $article->createDom('body', null , []);
         $text = '';
         $galleys = $submission->getGalleys();
 
@@ -56,7 +56,7 @@ class ArticleBody extends \DOMDocument
                     $parser->close();
                 }
                 // create element p
-                $paragraphElement = $article->createDomElement('p', htmlspecialchars($text, ENT_IGNORE) , []);
+                $paragraphElement = $article->createDom('p', htmlspecialchars($text, ENT_IGNORE) , []);
             }
             // Use the first parseable galley.
             if (!empty($text)) break;

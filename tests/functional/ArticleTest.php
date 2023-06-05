@@ -217,7 +217,7 @@ class ArticleTest extends PKPTestCase
     /**
      * @covers ::createDomElement
      */
-    public function testCreateDomElement(){
+    public function testCreateDom(){
         $record = $this->createOAIRecordMockObject();
         $rootAttributes = [
             'xmlns:xlink'=>'http://www.w3.org/1999/xlink',
@@ -226,7 +226,7 @@ class ArticleTest extends PKPTestCase
             'xml:lang'=>'en'
         ];
         $article = new Article($record);
-        $actual = $article->createDomElement('article',null,$rootAttributes);
+        $actual = $article->createDom('article',null,$rootAttributes);
         self::assertXmlStringEqualsXmlFile('plugins/generic/jatsTemplate/tests/data/createElementMethod.xml',$article->saveXML($actual));
     }
 
@@ -242,8 +242,8 @@ class ArticleTest extends PKPTestCase
             'xml:lang'=>'en'
         ];
         $article = new Article($record);
-        $articleElement = $article->createDomElement('article',null,$rootAttributes);
-        $frontElement = $article->createDomElement('front',null,[]);
+        $articleElement = $article->createDom('article',null,$rootAttributes);
+        $frontElement = $article->createDom('front',null,[]);
         $article->appendChildToParent($articleElement,$frontElement);
         self::assertXmlStringEqualsXmlFile('plugins/generic/jatsTemplate/tests/data/appendChild.xml',$article->saveXML($articleElement));
     }
